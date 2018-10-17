@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -22,11 +24,12 @@ public class MainActivity extends AppCompatActivity {
     private Button btn;
     private ImageView myImageView;
     private Paint myRectPaint;
-    private Bitmap myBitmap;
+    private Canvas tempCanvas;
+    private Bitmap myBitmap, tempBitmap;
     private FaceDetector faceDetector;
-    private Frame frame ;
-    private SparseArray<Face> faces ;
-    private String msg_err="Could not set up the face detector!";
+    private Frame frame;
+    private SparseArray<Face> faces;
+    private String msg_err = "Could not set up the face detector!";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
                 createPaintObject();
                 createCanvasObject(myBitmap);
                 createFaceDetector(v);
+                detectFace();
+                drawRectangles();
             }
         });
     }
@@ -50,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         options.inMutable = true;
         myBitmap = BitmapFactory.decodeResource(
                 getApplicationContext().getResources(),
-                R.drawable.test1,
+                R.drawable.test2,
                 options);
 
     }
@@ -63,10 +68,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void createCanvasObject(Bitmap myBitmap) {
-        Bitmap tempBitmap = Bitmap.createBitmap(myBitmap.getWidth(),
-                                                myBitmap.getHeight(),
-                                                Bitmap.Config.RGB_565);
-        Canvas tempCanvas = new Canvas(tempBitmap);
+        tempBitmap = Bitmap.createBitmap(myBitmap.getWidth(),
+                myBitmap.getHeight(),
+                Bitmap.Config.RGB_565);
+        tempCanvas = new Canvas(tempBitmap);
         tempCanvas.drawBitmap(myBitmap, 0, 0, null);
     }
 
@@ -78,9 +83,21 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
     }
+
     public void detectFace() {
         frame = new Frame.Builder().setBitmap(myBitmap).build();
         faces = faceDetector.detect(frame);
     }
 
+    public void drawRectangles() {
+        for (int i = 0; i < faces.size(); i++) {
+            Face thisFace = faces.valueAt(i);
+            float x1 = thisFace.getPosition().x;
+            float y1 = thisFace.getPosition().y;
+            float x2 = x1 + thisFace.getWidth();
+            float y2 = y1 + thisFace.getHeight();
+            tempCanvas.drawRoundRect(new RectF(x1, y1, x2, y2), 2, 2, myRectPaint);
+        }
+        myImageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+    }
 }
