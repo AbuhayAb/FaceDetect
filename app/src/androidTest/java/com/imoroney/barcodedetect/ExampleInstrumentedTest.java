@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.imoroney.barcodedetect", appContext.getPackageName());
+        assertEquals("com.imoroney.facedetect", appContext.getPackageName());
     }
 }
